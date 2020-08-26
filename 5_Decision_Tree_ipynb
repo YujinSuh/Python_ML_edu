@@ -1,0 +1,337 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "5_Decision_Tree.ipynb의 사본",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/YujinSuh/Python_ML_edu/blob/master/5_Decision_Tree_ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "pUIZG_1BrYzG",
+        "colab_type": "text"
+      },
+      "source": [
+        "# 의사결정 나무 실습"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "e4YWfayTrbyb",
+        "colab_type": "text"
+      },
+      "source": [
+        "python의 scikit-learn 패키지를 이용해 의사결정 나무를 직접 실행해보자."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "8Y3bfqwQreH9",
+        "colab_type": "text"
+      },
+      "source": [
+        "### 데이터 불러오기 및 분할하기"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "y6LQ-Lb8red3",
+        "colab_type": "text"
+      },
+      "source": [
+        "로지스틱 회귀분석과 SVM 때 사용했던 [cancer dataset](https://scikit-learn.org/stable/datasets/index.html#breast-cancer-wisconsin-diagnostic-dataset)을 그대로 사용하자."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "WOn-huzgrH2J",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "outputId": "afdf48b3-22f5-4fa5-f4b5-c8c89a2e9d71"
+      },
+      "source": [
+        "from sklearn import datasets\n",
+        "import numpy as np\n",
+        "data = datasets.load_breast_cancer()\n",
+        "\n",
+        "x = data['data']\n",
+        "y = data['target']\n",
+        "\n",
+        "print(x.shape, y.shape)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "(569, 30) (569,)\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "RWF_aIjzrjVf",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "outputId": "1fc4488b-9dc3-4124-e6e6-92a6af7ff501"
+      },
+      "source": [
+        "from sklearn.model_selection import train_test_split\n",
+        "\n",
+        "# 데이터 나누기 - 6:2:2 비율\n",
+        "x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)\n",
+        "x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.25, random_state=1)\n",
+        "\n",
+        "print(x_train.shape, x_val.shape, x_test.shape)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "(341, 30) (114, 30) (114, 30)\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "QS_-NUrorljq",
+        "colab_type": "text"
+      },
+      "source": [
+        "### 모델 학습 및 평가하기"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "uagZyL7jr3y5",
+        "colab_type": "text"
+      },
+      "source": [
+        "Scikit-learn의 [DecisionTreeClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html?highlight=decisiontree#sklearn.tree.DecisionTreeClassifier) 모델을 사용하면 수업 시간에 다루었던 의사결정 나무 모델을 만들어 볼 수 있다."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "njebKs96rmm5",
+        "colab_type": "code",
+        "colab": {}
+      },
+      "source": [
+        "from sklearn.tree import DecisionTreeClassifier"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hCJDySnhsTon",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 129
+        },
+        "outputId": "2962fcb2-74db-4ace-babc-6423b4bef6eb"
+      },
+      "source": [
+        "# 의사결정 나무 모델 학습하기\n",
+        "tree = DecisionTreeClassifier()\n",
+        "tree.fit(x_train, y_train)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DecisionTreeClassifier(ccp_alpha=0.0, class_weight=None, criterion='gini',\n",
+              "                       max_depth=None, max_features=None, max_leaf_nodes=None,\n",
+              "                       min_impurity_decrease=0.0, min_impurity_split=None,\n",
+              "                       min_samples_leaf=1, min_samples_split=2,\n",
+              "                       min_weight_fraction_leaf=0.0, presort='deprecated',\n",
+              "                       random_state=None, splitter='best')"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "s7gxPNJSsbyc",
+        "colab_type": "text"
+      },
+      "source": [
+        "학습 상태를 점검하기 위해 training과 validation data에 대한 정확도 및 confusion matrix를 확인해 보자."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "vMAKV3BXsk3P",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 73
+        },
+        "outputId": "45ef3fd5-b9ba-42f1-f359-b311f31781e2"
+      },
+      "source": [
+        "# TODO: training accuracy 및 confusion matrix\n",
+        "from sklearn.metrics import confusion_matrix, accuracy_score\n",
+        "print('accuracy: ', accuracy_score(y_train, tree.predict(x_train)))\n",
+        "confusion_matrix(y_train, tree.predict(x_train))\n"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "accuracy:  1.0\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[130,   0],\n",
+              "       [  0, 211]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "fauAwKDosofr",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 73
+        },
+        "outputId": "a4f240d3-c8d1-45dd-8bfa-05070b216b3f"
+      },
+      "source": [
+        "# TODO: validation accuracy 및 confusion matrix\n",
+        "print('accuracy: ', accuracy_score(y_val, tree.predict(x_val)))\n",
+        "confusion_matrix(y_val, tree.predict(x_val))"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "accuracy:  0.9210526315789473\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[36,  4],\n",
+              "       [ 5, 69]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "KLDssLH2s8ft",
+        "colab_type": "text"
+      },
+      "source": [
+        "수업 시간에 배웠던 내용을 떠올리며, training과 validation 성능의 차이를 줄일 수 있는 간단한 방법을 생각해 보자."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7fZJwXDY5o8H",
+        "colab_type": "code",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 55
+        },
+        "outputId": "29092e55-6b97-411c-aeb6-cfb2e37917e1"
+      },
+      "source": [
+        "# TODO: 보다 좋은 의사결정 나무 모델 만들기\n",
+        "trees = DecisionTreeClassifier(max_depth=3, min_samples_leaf=5) #좀더 작은 가지쳐짐, overfitting 방지. max_depth ~= min_sample_leaf \n",
+        "trees.fit(x_train, y_train)\n",
+        "\n",
+        "print('accuracy: ', accuracy_score(y_train, trees.predict(x_train)))\n",
+        "print('accuracy: ', accuracy_score(y_val, trees.predict(x_val)))\n",
+        "\n",
+        "\n",
+        "## logistic 에서는 hyperparameter\n",
+        "## SVM 에서는 grid ~ 이용해서 overfitting 방지"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "accuracy:  0.9648093841642229\n",
+            "accuracy:  0.9649122807017544\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    }
+  ]
+}
